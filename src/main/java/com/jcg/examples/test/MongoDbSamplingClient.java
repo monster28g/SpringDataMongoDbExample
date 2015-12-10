@@ -9,11 +9,15 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TimeZone;
 
 public class MongoDbSamplingClient {
     MongoClient mongoClient;
+    SimpleDateFormat sdf;
+
     final static String timeStamp = "timestamp2";
 
     final static String map = " function () {"
@@ -33,6 +37,7 @@ public class MongoDbSamplingClient {
             + " }";
 
     public MongoDbSamplingClient(String address, int port) {
+        sdf = new SimpleDateFormat("MM-dd-yyyy_HH-mm-ss");
         try {
             mongoClient = new MongoClient( address , port );
         } catch (UnknownHostException e) {
@@ -79,15 +84,13 @@ public class MongoDbSamplingClient {
 //                results.add((DBObject) o.get("value"));
 //            }
 
-
-
             System.out.println(getDate(start, i));
             String s = getResultFormat(results);
             if(DUMP_TYPE.CONSOLE.equals(type)) {
                 System.out.println(s);
             }else if(DUMP_TYPE.FILE.equals(type)) {
                 try {
-                    out(String.valueOf(start), s);
+                    out(convertDate(start), s);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -97,6 +100,16 @@ public class MongoDbSamplingClient {
         }
 
 
+    }
+
+    private String convertDate(long start) {
+        return getSimpleDateFormatWithGMT().format(new java.util.Date (start));
+    }
+
+    private SimpleDateFormat getSimpleDateFormatWithGMT() {
+
+        sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+        return sdf;
     }
 
 
@@ -169,7 +182,7 @@ public class MongoDbSamplingClient {
 
 
     private String getDate(long start, int i) {
-        return "start priod "+ i + " : " + new java.text.SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(new java.util.Date (start));
+        return "start priod "+ i + " : " + getSimpleDateFormatWithGMT().format(new java.util.Date (start));
     }
 
     private long getStartTime(String timeStamp, DBCollection coll) {
