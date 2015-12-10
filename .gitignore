@@ -31,3 +31,15 @@
 ## File-based project format:
 *.ipr
 *.iws
+.settings/org.eclipse.jdt.core.prefs
+.settings/org.eclipse.m2e.core.prefs
+.settings/org.eclipse.wst.common.project.facet.core.xml
+target/classes/spring-config.xml
+target/classes/com/jcg/examples/test/Application.class
+target/classes/com/jcg/examples/test/DUMP_TYPE.class
+target/classes/com/jcg/examples/test/ItemData.class
+target/classes/com/jcg/examples/test/JSONUtil.class
+target/classes/com/jcg/examples/test/MongoDbSamplingClient.class
+target/classes/com/jcg/examples/test/StreamUtils.class
+target/classes/com/jcg/examples/test/StructureCreator.class
+target/classes/com/jcg/examples/test/VDMPathDatas.class
