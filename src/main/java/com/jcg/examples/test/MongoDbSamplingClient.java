@@ -61,14 +61,15 @@ public class MongoDbSamplingClient {
         DBCollection collection = db.getCollection("SENSOR_DATA");
         // init start time
 //        long start = getStartTime(timeStamp, collection);
-        long start = 1449014400000L;
+//        long start = 1449014400000L;
+        long start = 1448928000000L;
         long next = 0;
 
 
         for(int i = 0; i < endTime; i++) {
             next = periodOneMinute(start);
-            BasicDBObject query = new BasicDBObject(timeStamp, new BasicDBObject("$gt", start).append("$lt", next))
-                    .append("vdmpath", new BasicDBObject("$ne", "AIS/GenAIS0.Msg.data"));
+            BasicDBObject query = new BasicDBObject(timeStamp, new BasicDBObject("$gt", start).append("$lt", next));
+//                    .append("vdmpath", new BasicDBObject("$ne", "AIS/GenAIS0.Msg.data"));
 
             System.out.println(query.toString());
 
