@@ -53,16 +53,15 @@ public class MongoDbSamplingClient {
         this.mongoClient = new MongoClient(address, port);
     }
 
-    public void doDump(DUMP_TYPE type) {
-        // an hour
-        int endTime = 1440;
+    public void getPath(DUMP_TYPE type) {
+
+        int endTime = 2;
 
         DB db = mongoClient.getDB( "hhivaasDevDB" );
         DBCollection collection = db.getCollection("SENSOR_DATA");
-        // init start time
-//        long start = getStartTime(timeStamp, collection);
-//        long start = 1449014400000L;
-        long start = 1448928000000L;
+
+//Fri, 11 Dec 2015 11:00:00 GMT
+        long start = 1449831600000L;
         long next = 0;
 
 
@@ -70,6 +69,56 @@ public class MongoDbSamplingClient {
             next = periodOneMinute(start);
             BasicDBObject query = new BasicDBObject(timeStamp, new BasicDBObject("$gt", start).append("$lt", next));
 //                    .append("vdmpath", new BasicDBObject("$ne", "AIS/GenAIS0.Msg.data"));
+
+            System.out.println(query.toString());
+
+            List<DBObject> results = collection.find(query).toArray();
+            StringBuilder sb = new StringBuilder();
+
+            results.stream().map(e ->e.get("vdmpath")).distinct().sorted().forEach(System.out::println);
+
+            try {
+                out(convertDate(start), sb.toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+
+    }
+
+    public void testDump(long start, long next)
+    {
+
+        DB db = mongoClient.getDB( "hhivaasDevDB" );
+        DBCollection collection = db.getCollection("SENSOR_DATA");
+//        BasicDBObject query = new BasicDBObject(timeStamp, new BasicDBObject("$gt", start).append("$lt", next))
+//                .append("vdmpath", new BasicDBObject("$ne", "AIS/GenAIS0.Msg.data"));
+
+        List<DBObject> results = collection.find().toArray();
+        results.stream().forEach(System.out::println);
+
+    }
+    public void doDump(DUMP_TYPE type) {
+        // an hour
+//        int endTime = 1440;
+        int endTime = 2880;
+
+        DB db = mongoClient.getDB( "hhivaasDevDB" );
+        DBCollection collection = db.getCollection("SENSOR_DATA");
+        // init start time
+//        long start = getStartTime(timeStamp, collection);
+//        long start = 1449014400000L;
+
+        //Fri, 11 Dec 2015 11:00:00 GMT
+        long start = 1449831600000L;
+        long next = 0;
+
+
+        for(int i = 0; i < endTime; i++) {
+            next = periodOneMinute(start);
+            BasicDBObject query = new BasicDBObject(timeStamp, new BasicDBObject("$gt", start).append("$lt", next))
+                    .append("vdmpath", new BasicDBObject("$ne", "AIS/GenAIS0.Msg.data"));
 
             System.out.println(query.toString());
 
