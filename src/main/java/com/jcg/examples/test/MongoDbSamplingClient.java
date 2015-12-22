@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -55,7 +56,7 @@ public class MongoDbSamplingClient {
 
     public void getPath(DUMP_TYPE type) {
 
-        int endTime = 2;
+        int endTime = 1440;
 
         DB db = mongoClient.getDB( "hhivaasDevDB" );
         DBCollection collection = db.getCollection("SENSOR_DATA");
@@ -64,6 +65,7 @@ public class MongoDbSamplingClient {
         long start = 1449831600000L;
         long next = 0;
 
+        StringBuilder vdmPaths = new StringBuilder();
 
         for(int i = 0; i < endTime; i++) {
             next = periodOneMinute(start);
@@ -75,7 +77,9 @@ public class MongoDbSamplingClient {
             List<DBObject> results = collection.find(query).toArray();
             StringBuilder sb = new StringBuilder();
 
-            results.stream().map(e ->e.get("vdmpath")).distinct().sorted().forEach(System.out::println);
+//            results.stream().map(e ->e.get("vdmpath")).distinct().sorted().forEach(System.out::println);
+
+            results.stream().map(e ->e.get("vdmpath")).distinct().sorted().forEach(e -> vdmPaths.append(String.valueOf(e)).append("\n"));
 
             try {
                 out(convertDate(start), sb.toString());
@@ -84,9 +88,56 @@ public class MongoDbSamplingClient {
             }
         }
 
+        if(DUMP_TYPE.CONSOLE.equals(type)) {
+            Arrays.asList(vdmPaths.toString().split("\n")).stream().forEachOrdered(System.out::println);
+        }else if(DUMP_TYPE.FILE.equals(type)) {
+            try {
+                out("vdmpaths", vdmPaths.toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
     }
 
+
+    public void getVDMPath(DUMP_TYPE type) {
+        // an hour
+        int endTime = 1440;
+
+        DB db = mongoClient.getDB( "hhivaasDevDB" );
+        DBCollection collection = db.getCollection("SENSOR_DATA");
+        long start = 1448928000000L;
+        long next = 0;
+
+        StringBuilder vdmPaths = new StringBuilder();
+
+        for(int i = 0; i < endTime; i++) {
+            next = periodOneMinute(start);
+            BasicDBObject query = new BasicDBObject(timeStamp, new BasicDBObject("$gt", start).append("$lt", next));
+//                    .append("vdmpath", new BasicDBObject("$ne", "AIS/GenAIS0.Msg.data"));
+
+            System.out.println(query.toString());
+
+            List<DBObject> results = collection.find(query).toArray();
+
+            results.stream().forEach(e -> vdmPaths.append(String.valueOf(e.get("vdmpath"))).append("\n"));
+
+            start = next;
+        }
+
+        if(DUMP_TYPE.CONSOLE.equals(type)) {
+            Arrays.asList(vdmPaths.toString().split("\n")).stream().forEachOrdered(System.out::println);
+        }else if(DUMP_TYPE.FILE.equals(type)) {
+            try {
+                out("vdmpaths", vdmPaths.toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+
+    }
     public void testDump(long start, long next)
     {
 
