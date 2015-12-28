@@ -1,4 +1,4 @@
-package com.jcg.examples.test;
+package com.hhi.data.mongo.test;
 
 import com.mongodb.*;
 import com.mongodb.util.JSON;
@@ -10,10 +10,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 
 public class MongoDbSamplingClient {
     MongoClient mongoClient;
@@ -54,18 +51,19 @@ public class MongoDbSamplingClient {
         this.mongoClient = new MongoClient(address, port);
     }
 
-    public void getPath(DUMP_TYPE type) {
+    public void getPath(DUMP_TYPE type, String fileName) {
 
         int endTime = 1440;
 
         DB db = mongoClient.getDB( "hhivaasDevDB" );
         DBCollection collection = db.getCollection("SENSOR_DATA");
 
-//Fri, 11 Dec 2015 11:00:00 GMT
-        long start = 1449831600000L;
+//        Human time (your time zone): 12/25/2015, 12:00:00 AM
+//        Human time (GMT): Thu, 24 Dec 2015 15:00:00 GMT
+        long start = 1450969200000L;
         long next = 0;
 
-        StringBuilder vdmPaths = new StringBuilder();
+        Set<String> vdmPathSet = new HashSet<>();
 
         for(int i = 0; i < endTime; i++) {
             next = periodOneMinute(start);
@@ -73,26 +71,15 @@ public class MongoDbSamplingClient {
 //                    .append("vdmpath", new BasicDBObject("$ne", "AIS/GenAIS0.Msg.data"));
 
             System.out.println(query.toString());
+            collection.find(query).toArray().stream().map(e ->e.get("vdmpath")).distinct().sorted().forEach(e -> vdmPathSet.add(String.valueOf(e)));
 
-            List<DBObject> results = collection.find(query).toArray();
-            StringBuilder sb = new StringBuilder();
-
-//            results.stream().map(e ->e.get("vdmpath")).distinct().sorted().forEach(System.out::println);
-
-            results.stream().map(e ->e.get("vdmpath")).distinct().sorted().forEach(e -> vdmPaths.append(String.valueOf(e)).append("\n"));
-
-            try {
-                out(convertDate(start), sb.toString());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
 
         if(DUMP_TYPE.CONSOLE.equals(type)) {
-            Arrays.asList(vdmPaths.toString().split("\n")).stream().forEachOrdered(System.out::println);
+            vdmPathSet.stream().forEachOrdered(System.out::println);
         }else if(DUMP_TYPE.FILE.equals(type)) {
             try {
-                out("vdmpaths", vdmPaths.toString());
+                out(fileName, vdmPathSet.toString());
             } catch (IOException e) {
                 e.printStackTrace();
             }

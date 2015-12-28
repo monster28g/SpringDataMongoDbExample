@@ -1,4 +1,4 @@
-package com.jcg.examples.test;
+package com.hhi.data.mongo.test;
 
 import java.util.ArrayList;
 import java.util.List;

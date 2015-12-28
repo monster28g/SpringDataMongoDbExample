@@ -1,4 +1,4 @@
-package com.jcg.examples.test;
+package com.hhi.data.mongo.test;
 
 public enum DUMP_TYPE {
     FILE(0), CONSOLE(1);
